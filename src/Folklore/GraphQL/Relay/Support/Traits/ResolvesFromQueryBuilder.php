@@ -77,13 +77,14 @@ trait ResolvesFromQueryBuilder
         return $query->get();
     }
 
-    protected function getCollectionFromItems($items, $offset, $limit, $hasPreviousPage, $hasNextPage)
+    protected function getCollectionFromItems($items, $offset, $limit, $hasPreviousPage, $hasNextPage, $totalCount)
     {
         $collection = new EdgesCollection($items);
         $collection->setStartCursor($offset);
         $collection->setEndCursor($offset + $limit - 1);
         $collection->setHasNextPage($hasNextPage);
         $collection->setHasPreviousPage($hasPreviousPage);
+        $collection->setTotalCount($totalCount);
         return $collection;
     }
 
@@ -143,7 +144,7 @@ trait ResolvesFromQueryBuilder
 
         $resolveItemsArguments = array_merge([$query], $arguments);
         $items = call_user_func_array([$this, 'resolveItemsFromQueryBuilder'], $resolveItemsArguments);
-        $collection = $this->getCollectionFromItems($items, $offset, $limit, $hasPreviousPage, $hasNextPage);
+        $collection = $this->getCollectionFromItems($items, $offset, $limit, $hasPreviousPage, $hasNextPage, $count);
 
         return $collection;
     }

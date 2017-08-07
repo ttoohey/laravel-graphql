@@ -34,6 +34,12 @@ class ConnectionType extends BaseType
                 'resolve' => function ($root) {
                     return $this->getPageInfoFromRoot($root);
                 }
+            ],
+            'totalCount' => [
+                'type' => Type::Int(),
+                'resolve' => function ($root) {
+                    return $this->getTotalCountFromRoot($root);
+                }
             ]
         ];
     }
@@ -146,5 +152,15 @@ class ConnectionType extends BaseType
             'startCursor' => $startCursor !== null ? $startCursor:array_get($edges, '0.cursor'),
             'endCursor' => $endCursor !== null ? $endCursor:array_get($edges, (sizeof($edges)-1).'.cursor')
         ];
+    }
+    
+    protected function getTotalCountFromRoot($root)
+    {
+        $totalCount = null;
+        if ($root instanceof EdgesCollection) {
+            $totalCount = $root->getTotalCount();
+        }
+
+        return $totalCount;
     }
 }

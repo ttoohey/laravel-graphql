@@ -10,6 +10,7 @@ class EdgesCollection extends Collection
     protected $endCursor = null;
     protected $hasNextPage = false;
     protected $hasPreviousPage = false;
+    protected $totalCount = 0;
 
     public function setHasNextPage($hasNextPage)
     {
@@ -49,5 +50,15 @@ class EdgesCollection extends Collection
     public function getEndCursor()
     {
         return $this->endCursor;
+    }
+    
+    public function setTotalCount($totalCount)
+    {
+        $this->totalCount = $totalCount;
+    }
+    
+    public function getTotalCount()
+    {
+        return $this->totalCount;
     }
 }
