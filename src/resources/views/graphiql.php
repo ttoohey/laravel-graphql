@@ -19,6 +19,7 @@
         <script src="https://unpkg.com/graphiql@^0.7.8/graphiql.min.js"></script>
     </head>
     <body>
+        <div style="position: fixed; top: 6px; left: 260px"><input name="idToken" placeholder="Authentication" style="height: 32px" /></div>
         <div id="graphiql">Loading...</div>
         <script>
             /**
@@ -81,14 +82,18 @@
 
             // Defines a GraphQL fetcher using the fetch API.
             function graphQLFetcher(graphQLParams) {
+                var idToken = document.querySelectorAll('input[name="idToken"]')[0].value;
                 return new Promise(function(resolve, reject) {
-                    superagent.post('<?php echo $graphqlPath; ?>')
+                    var post = superagent.post('<?php echo $graphqlPath; ?>')
                         .send(graphQLParams)
                         .set('Accept', 'application/json')
-                        .set('Content-Type', 'application/json')
-                        .end(function(err, response) {
-                            resolve(response.body);
-                        });
+                        .set('Content-Type', 'application/json');
+                    if (idToken !== '') {
+                        post.set('Authorization', 'Bearer ' + idToken)
+                    }
+                    post.end(function(err, response) {
+                        resolve(response.body);
+                    });
                 });
             }
 
