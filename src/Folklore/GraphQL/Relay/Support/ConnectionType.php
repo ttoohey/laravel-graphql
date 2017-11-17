@@ -5,7 +5,6 @@ namespace Folklore\GraphQL\Relay\Support;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Definition\InterfaceType;
 use Folklore\GraphQL\Support\Type as BaseType;
-use GraphQL;
 
 use Folklore\GraphQL\Relay\EdgesCollection;
 use Illuminate\Pagination\AbstractPaginator;
@@ -23,6 +22,12 @@ class ConnectionType extends BaseType
     protected function fields()
     {
         return [
+            'total' => [
+                'type' => Type::int(),
+                'resolve' => function ($root) {
+                    return $this->getTotalFromRoot($root);
+                }
+            ],
             'edges' => [
                 'type' => Type::listOf($this->getEdgeObjectType()),
                 'resolve' => function ($root) {
@@ -30,15 +35,9 @@ class ConnectionType extends BaseType
                 }
             ],
             'pageInfo' => [
-                'type' => GraphQL::type('PageInfo'),
+                'type' => app('graphql')->type('PageInfo'),
                 'resolve' => function ($root) {
                     return $this->getPageInfoFromRoot($root);
-                }
-            ],
-            'totalCount' => [
-                'type' => Type::Int(),
-                'resolve' => function ($root) {
-                    return $this->getTotalCountFromRoot($root);
                 }
             ]
         ];
@@ -60,8 +59,8 @@ class ConnectionType extends BaseType
     {
         $edgeType = $this->getEdgeType();
         $name = $edgeType->config['name'].'Edge';
-        GraphQL::addType(\Folklore\GraphQL\Relay\ConnectionEdgeType::class, $name);
-        $type = GraphQL::type($name);
+        app('graphql')->addType(\Folklore\GraphQL\Relay\ConnectionEdgeType::class, $name);
+        $type = app('graphql')->type($name);
         $type->setEdgeType($edgeType);
         return $type;
     }
@@ -75,6 +74,16 @@ class ConnectionType extends BaseType
         $resolveId = $edgeType->getField('id')->resolveFn;
         return $resolveId($edge);
     }
+
+    protected function getTotalFromRoot($root)
+    {
+        $total = 0;
+        if ($root instanceof EdgesCollection) {
+            $total = $root->getTotal();
+        }
+        return $total;
+    }
+
 
     protected function getEdgesFromRoot($root)
     {
@@ -152,15 +161,5 @@ class ConnectionType extends BaseType
             'startCursor' => $startCursor !== null ? $startCursor:array_get($edges, '0.cursor'),
             'endCursor' => $endCursor !== null ? $endCursor:array_get($edges, (sizeof($edges)-1).'.cursor')
         ];
-    }
-    
-    protected function getTotalCountFromRoot($root)
-    {
-        $totalCount = null;
-        if ($root instanceof EdgesCollection) {
-            $totalCount = $root->getTotalCount();
-        }
-
-        return $totalCount;
     }
 }
