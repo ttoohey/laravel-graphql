@@ -20,7 +20,7 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/graphiql/0.11.3/graphiql.min.js"></script>
     </head>
     <body>
-        <div style="position: fixed; top: 6px; left: 260px"><input name="idToken" placeholder="Authentication" style="height: 32px" /></div>
+        <div style="position: fixed; top: 6px; right: 360px"><input name="idToken" placeholder="Authorization: Bearer" style="height: 32px" /></div>
         <div id="graphiql">Loading...</div>
         <script>
             /**
@@ -83,13 +83,16 @@
             // Defines a GraphQL fetcher using the fetch API.
             function graphQLFetcher(graphQLParams) {
                 var idToken = document.querySelectorAll('input[name="idToken"]')[0].value;
+                var headers = {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+                if (idToken !== '') {
+                    headers.Authorization = `Bearer ${idToken}`;
+                }
                 return fetch('<?php echo $graphqlPath; ?>', {
                     method: 'post',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json',
-                        'Authorization': idToken !== '' ? `Bearer ${idToken}` : null
-                    },
+                    headers: headers,
                     body: JSON.stringify(graphQLParams),
                     credentials: 'include',
                 }).then(function (response) {
